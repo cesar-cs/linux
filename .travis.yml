@@ -25,4 +25,4 @@ install:
 
 script:
   - mkdir -p $HOME/.ccache
-  - travis_wait 50 ./arch/powerpc/tools/ci-build.sh
+  - travis_wait 50 bash -x ./arch/powerpc/tools/ci-build.sh
