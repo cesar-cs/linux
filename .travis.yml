@@ -1,0 +1,32 @@
+language: c
+dist: xenial
+cache: ccache
+services:
+  - docker
+
+env:
+  global:
+    - ARCH=powerpc
+
+matrix:
+  include:
+    - os:   linux
+      arch: ppc64le
+      env:  TARGET=kernel SUBARCH=ppc64le IMAGE=ubuntu-20.04 DEFCONFIG=ppc64le_defconfig
+      name: "kernel: ppc64le (PPC_BOOK3S_64 && LITTLE_ENDIAN)"
+    - os:   linux
+      arch: ppc64le
+      env:  TARGET=kernel SUBARCH=ppc64le IMAGE=ubuntu-20.04 DEFCONFIG=ppc64le_defconfig CLANG=1
+      name: "kernel: ppc64le clang (PPC_BOOK3S_64 && LITTLE_ENDIAN)"
+    - os:   linux
+      arch: ppc64le
+      env:  TARGET=ppctests SUBARCH=ppc64le IMAGE=ubuntu-18.04
+      name: "ppctests: ppc64le Ubuntu 18.04"
+
+
+install:
+  - docker pull linuxppc/build:$IMAGE-$(uname -m)
+
+script:
+  - mkdir -p $HOME/.ccache
+  - travis_wait 50 ./arch/powerpc/tools/ci-build.sh
