@@ -107,8 +107,13 @@ notrace long system_call_exception(long r3, long r4, long r5,
  */
 static notrace inline bool prep_irq_for_enabled_exit(void)
 {
-	/* This must be done with RI=1 because tracing may touch vmaps */
-	trace_hardirqs_on();
+	if (IS_ENABLED(CONFIG_TRACE_IRQFLAGS)) {
+		/* Prevent perf interrupts hitting and messing up the trace_hardirqs state */
+		irq_soft_mask_set(IRQS_ALL_DISABLED);
+
+		/* This must be done with RI=1 because tracing may touch vmaps */
+		trace_hardirqs_on();
+	}
 
 	/* This pattern matches prep_irq_for_idle */
 	__hard_EE_RI_disable();
@@ -122,6 +127,8 @@ static notrace inline bool prep_irq_for_enabled_exit(void)
 	}
 	local_paca->irq_happened = 0;
 	irq_soft_mask_set(IRQS_ENABLED);
+
+	lockdep_assert_irqs_enabled();
 
 	return true;
 }
